@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Sample</title>
+<style>
+html,body{height:100%;margin:0;background:#000;color:#f2f2f2;font:4vmin/1.3 system-ui,sans-serif;overflow:hidden}
+section{position:absolute;inset:0;display:none;place-content:center;padding:9vmin}
+section.on{display:grid}
+h1{font-size:9vmin;margin:0 0 2vmin;font-weight:600}p{color:#999;margin:0}
+</style></head><body>
+<section><h1>Sample presentation</h1><p>Use ← → to move between slides.</p></section>
+<section><h1>Any HTML works</h1><p>Reveal.js, Slidev exports, or hand-written pages.</p></section>
+<section><h1>Add yours</h1><p>Drop files in presentations/ and list them in db.js.</p></section>
+<script>
+const s=[...document.querySelectorAll('section')];let i=0;
+function show(n){i=Math.max(0,Math.min(s.length-1,n));s.forEach((e,k)=>e.classList.toggle('on',k===i));
+ parent.postMessage({type:'slide',index:i,total:s.length},'*');}
+function nav(d){show(i+d);}
+addEventListener('keydown',e=>{
+ if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key))nav(1);
+ if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key))nav(-1);
+ if(e.key==='Home')show(0);if(e.key==='End')show(s.length-1);});
+addEventListener('message',e=>{if(e.data&&e.data.type==='nav')nav(e.data.dir);});
+show(0);
+</script></body></html>

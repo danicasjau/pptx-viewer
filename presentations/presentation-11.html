@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MINIVITA — Presentació Tècnica & Conceptual [11]</title>
+
+  <!-- Typography: Modern Architectural & Monospaced Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       01. RESET & DESIGN TOKENS (LIGHT SOFT-GRAY PALETTE)
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Soft gray background, almost white */
+      --bg-base: #f5f6f8;
+      --bg-surface: #ffffff;
+      --bg-surface-subtle: #edf0f5;
+      --bg-code: #f0f2f6;
+
+      /* High contrast architectural text */
+      --text-main: #11151c;
+      --text-muted: #4e5666;
+      --text-faint: #768194;
+
+      /* Technical borders & shadows */
+      --border-subtle: #dbe0ea;
+      --border-strong: #c2c9d6;
+      --shadow-card: 0 4px 24px rgba(17, 21, 28, 0.05);
+      --shadow-lg: 0 12px 40px rgba(17, 21, 28, 0.08);
+
+      /* MINIVITA signature accents */
+      --accent-red: #c02424;
+      --accent-red-soft: rgba(192, 36, 36, 0.09);
+      --accent-red-glow: rgba(192, 36, 36, 0.25);
+      --accent-green: #0b8a44;
+      --accent-green-soft: rgba(11, 138, 68, 0.10);
+
+      /* Typography */
+      --font-display: 'Syne', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+      /* Transitions */
+      --trans-smooth: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-heading);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html.embedded #pres-hud {
+      display: none;
+    }
+
+    /* Ambient Subtle Grid Pattern */
+    .ambient-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background-image: 
+        radial-gradient(circle, #cfd6e2 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.45;
+    }
+
+    /* ==========================================================================
+       02. PRESENTATION DECK CONTAINER & SLIDE SYSTEM
+       ========================================================================== */
+    #presentation-deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    /* Individual Slide */
+    .slide {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(20px, 3.5vw, 48px);
+      box-sizing: border-box;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      transform: scale(0.99);
+    }
+
+    .slide.is-active {
+      display: flex;
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+
+    /* Inner Slide Content Box (16:9 Canvas) */
+    .slide-inner {
+      width: 100%;
+      max-width: 1440px;
+      height: 100%;
+      max-height: 860px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    /* Common Slide Header */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: clamp(16px, 2.5vw, 28px);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .slide-header__meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    .slide-header__meta span.doc-id {
+      color: var(--text-faint);
+      font-weight: 400;
+    }
+
+    .slide-header__title-box h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      line-height: 1.15;
+    }
+
+    .slide-header__title-box p {
+      font-family: var(--font-mono);
+      font-size: clamp(0.72rem, 1vw, 0.85rem);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .slide-header__badge {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: 4px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* Two-Column Presentation Grid */
+    .slide-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(24px, 3.5vw, 48px);
+      align-items: center;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .slide-text-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .slide-text-col p.lead-desc {
+      font-size: clamp(0.95rem, 1.25vw, 1.15rem);
+      color: var(--text-main);
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .slide-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .slide-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: clamp(0.82rem, 1vw, 0.95rem);
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .slide-point-icon {
+      font-family: var(--font-mono);
+      color: var(--accent-red);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .slide-point strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* Technical Spec Badges Bar */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .spec-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .spec-item__label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      text-transform: uppercase;
+    }
+
+    .spec-item__value {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Media Frame & Technical Framing Brackets */
+    .media-card-frame {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .media-card-frame img, .media-card-frame video {
+      width: 100%;
+      height: auto;
+      max-height: 480px;
+      object-fit: contain;
+      border-radius: 4px;
+      display: block;
+      background: #0d0f12;
+    }
+
+    .media-card-caption {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+      text-transform: uppercase;
+    }
+
+    .media-card-caption .tag {
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    /* Technical Corner Brackets */
+    .bracket-tl, .bracket-tr, .bracket-bl, .bracket-br {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      pointer-events: none;
+    }
+    .bracket-tl { top: 4px; left: 4px; border-top: 2px solid var(--accent-red); border-left: 2px solid var(--accent-red); }
+    .bracket-tr { top: 4px; right: 4px; border-top: 2px solid var(--accent-red); border-right: 2px solid var(--accent-red); }
+    .bracket-bl { bottom: 4px; left: 4px; border-bottom: 2px solid var(--accent-red); border-left: 2px solid var(--accent-red); }
+    .bracket-br { bottom: 4px; right: 4px; border-bottom: 2px solid var(--accent-red); border-right: 2px solid var(--accent-red); }
+
+    /* Slide Footer Information */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-faint);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .slide-footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    /* ==========================================================================
+       03. SLIDE 1 SPECIFIC: TITLE MINIVITA WITH AUTHOR INFO
+       ========================================================================== */
+    .slide-title-hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+      gap: clamp(20px, 3.5vw, 36px);
+    }
+
+    .hero-top-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      color: var(--accent-red);
+      background: var(--bg-surface);
+      padding: 6px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+      text-transform: uppercase;
+    }
+
+    .hero-live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      box-shadow: 0 0 10px var(--accent-red-glow);
+      animation: pulseDot 1.8s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .hero-brand-heading {
+      position: relative;
+      line-height: 0.95;
+    }
+
+    .hero-brand-heading h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3.8rem, 11vw, 8.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text-main);
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .hero-brand-heading .hero-outline {
+      font-family: var(--font-display);
+      font-size: clamp(3.8rem, 11vw, 8.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(17, 21, 28, 0.16);
+      text-transform: uppercase;
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .hero-subtitle-box {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .hero-subtitle-box h3 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      font-weight: 600;
+      color: var(--accent-red);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle-box p {
+      font-family: var(--font-heading);
+      font-size: clamp(0.92rem, 1.25vw, 1.12rem);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Author Info Card */
+    .hero-author-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: clamp(16px, 2.5vw, 24px) clamp(24px, 3.5vw, 40px);
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(20px, 3.5vw, 48px);
+      max-width: 900px;
+      width: 100%;
+      position: relative;
+    }
+
+    .hero-author-block {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .hero-author-block .author-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .hero-author-block .author-name {
+      font-family: var(--font-heading);
+      font-size: clamp(1rem, 1.35vw, 1.25rem);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .hero-author-block .author-title {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .hero-author-sep {
+      width: 1px;
+      height: 48px;
+      background: var(--border-subtle);
+    }
+
+    .hero-author-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .hero-author-meta span strong {
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       04. SLIDE 2 SPECIFIC: THE S-FIRST-SECTION CENTERED
+       ========================================================================== */
+    .s-first-section-centered {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      gap: clamp(16px, 2.5vw, 28px);
+    }
+
+    .s-first-heading-box {
+      text-align: center;
+      max-width: 860px;
+    }
+
+    .s-first-heading-box .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent-red);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .s-first-heading-box h2 {
+      font-family: var(--font-heading);
+      font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .s-first-heading-box p {
+      font-family: var(--font-mono);
+      font-size: clamp(0.72rem, 0.95vw, 0.85rem);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      line-height: 1.45;
+      text-transform: uppercase;
+    }
+
+    /* 3-Column Lateral Grid */
+    .s-first-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 500px) minmax(0, 1fr);
+      gap: 18px;
+      width: 100%;
+      max-width: 1320px;
+      align-items: center;
+    }
+
+    /* Lateral Terminal Wings (Light Architectural Aesthetic) */
+    .terminal-wing {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 14px 16px;
+      height: 420px;
+      max-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-card);
+      font-family: var(--font-mono);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .terminal-wing__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border-subtle);
+    }
+
+    .terminal-wing__header .status-tag {
+      color: var(--accent-green);
+      background: var(--accent-green-soft);
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+
+    .terminal-wing__body {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: clamp(0.6rem, 0.72vw, 0.72rem);
+      color: var(--text-muted);
+      line-height: 1.45;
+      white-space: nowrap;
+      margin-top: 10px;
+    }
+
+    .terminal-wing__body .t-line {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      opacity: 0.85;
+    }
+
+    .terminal-wing__body .t-line.highlight {
+      opacity: 1;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .terminal-wing__body .t-line:last-child::after {
+      content: ' ▍';
+      color: var(--accent-red);
+      animation: blinkCursor 0.8s infinite;
+    }
+
+    @keyframes blinkCursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Centered Media Box */
+    .center-media-box {
+      background: #080a0d;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .center-media-hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #b5c0d0;
+      letter-spacing: 0.08em;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      text-transform: uppercase;
+    }
+
+    .center-media-hud-top .rec-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #ff5252;
+      font-weight: 700;
+    }
+
+    .center-media-hud-top .rec-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ff5252;
+      box-shadow: 0 0 6px #ff5252;
+      animation: pulseDot 1.4s infinite;
+    }
+
+    .center-video-container {
+      width: 100%;
+      aspect-ratio: 9/16;
+      max-height: 360px;
+      background: #000000;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .center-video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .center-media-hud-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      color: #929fb0;
+      letter-spacing: 0.06em;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      text-transform: uppercase;
+    }
+
+    .center-media-hud-bottom .access-link {
+      color: #ff7676;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    /* Print Fallback Image (visible in print mode or when video disabled) */
+    .video-print-fallback {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ==========================================================================
+       05. DUAL IMAGE LAYOUT (SLIDE 6 INSTALLATION)
+       ========================================================================== */
+    .dual-image-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .dual-image-grid .media-card-frame img {
+      max-height: 380px;
+    }
+
+    /* ==========================================================================
+       06. PRESENTATION HUD BAR (UNOBTRUSIVE BOTTOM FLOATING CONTROLS)
+       ========================================================================== */
+    #pres-hud {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 6px 16px;
+      box-shadow: 0 8px 30px rgba(17, 21, 28, 0.12);
+      user-select: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .hud-btn {
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--trans-smooth);
+    }
+
+    .hud-btn:hover {
+      background: var(--bg-surface-subtle);
+      color: var(--accent-red);
+    }
+
+    .hud-btn:active {
+      transform: scale(0.96);
+    }
+
+    .hud-counter {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: 0.1em;
+      padding: 0 6px;
+    }
+
+    .hud-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border-strong);
+      cursor: pointer;
+      transition: var(--trans-smooth);
+    }
+
+    .hud-dot:hover {
+      background: var(--text-muted);
+      transform: scale(1.3);
+    }
+
+    .hud-dot.is-active {
+      background: var(--accent-red);
+      transform: scale(1.4);
+    }
+
+    .hud-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border-subtle);
+    }
+
+    .hud-key-hints {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       07. PRINT SPECIFICATIONS (@media print for crisp PDF export)
+       ========================================================================== */
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+
+    @media print {
+      *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #f5f6f8 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .ambient-grid,
+      #pres-hud,
+      .no-print {
+        display: none !important;
+      }
+
+      #presentation-deck {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      .slide {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        position: relative !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        box-sizing: border-box !important;
+        padding: 36px 48px !important;
+        background: #f5f6f8 !important;
+        overflow: hidden !important;
+      }
+
+      .slide-inner {
+        height: 100% !important;
+        max-height: 100% !important;
+      }
+
+      /* In print, hide interactive video and display fallback poster frame cleanly */
+      video {
+        display: none !important;
+      }
+
+      .video-print-fallback {
+        display: block !important;
+      }
+    }
+
+    /* Small Screen Responsive Fallback */
+    @media (max-width: 900px) {
+      .slide-grid-2col {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .s-first-layout {
+        grid-template-columns: 1fr;
+      }
+      .terminal-wing {
+        display: none;
+      }
+      .hero-author-card {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+      .hero-author-sep {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Ambient Architectural Grid Texture -->
+  <div class="ambient-grid" aria-hidden="true"></div>
+
+  <!-- Main Presentation Deck Container -->
+  <main id="presentation-deck">
+
+    <!-- ====================================================================
+         SLIDE 1: TITLE MINIVITA WITH AUTHOR INFO
+         ==================================================================== -->
+    <section class="slide is-active" id="slide-0" data-slide-index="0" aria-label="Diapo 1: MINIVITA Títol i Autoria">
+      <div class="slide-inner">
+
+        <!-- Top Micro Bar -->
+        <header class="slide-header" style="border-bottom: none; margin-bottom: 0;">
+          <div class="slide-header__meta">
+            <span class="hero-live-dot"></span>
+            <span>// MINIVITA — ART &amp; AUTONOMOUS SYSTEMS DOSSIER</span>
+            <span class="doc-id">// REF: MINIVITA-PRES-11</span>
+          </div>
+          <div class="slide-header__badge">CATÀLEG D'EXPOSICIÓ &bull; 2026</div>
+        </header>
+
+        <!-- Main Title Content Box -->
+        <div class="slide-title-hero">
+          <div class="hero-top-tag">
+            <span class="hero-live-dot"></span>
+            <span>DIGITAL SPECIMEN SIMULATION ENGINE</span>
+          </div>
+
+          <div class="hero-brand-heading">
+            <h1>MINIVITA</h1>
+            <div class="hero-outline" aria-hidden="true">MINIVITA</div>
+          </div>
+
+          <div class="hero-subtitle-box">
+            <h3>End of Modern Humanism</h3>
+            <p>
+              Simulació d'espècimen digital autònom en temps real &bull; Cicle de decisió temporal a 16 FPS &bull;
+              Arquitectura de memòria vectorial d'alta dimensionalitat i moviment procedural.
+            </p>
+          </div>
+
+          <!-- Author Info Dossier Card -->
+          <div class="hero-author-card">
+            <div class="bracket-tl"></div>
+            <div class="bracket-tr"></div>
+            <div class="bracket-bl"></div>
+            <div class="bracket-br"></div>
+
+            <div class="hero-author-block">
+              <span class="author-label">// AUTORIA &amp; ARQUITECTURA:</span>
+              <span class="author-name">Daniel Casadevall Jauhiainen</span>
+              <span class="author-title">Creative Technologist &amp; AI Systems Architect</span>
+            </div>
+
+            <div class="hero-author-sep" aria-hidden="true"></div>
+
+            <div class="hero-author-meta">
+              <span><strong>Àmbit:</strong> Barcelona / Helsinki &bull; Any 2026</span>
+              <span><strong>Mitjà:</strong> OpenGL / GLSL &bull; charLLM &bull; Vector DB</span>
+              <span><strong>Instal·lació:</strong> Terrari Digital &bull; Monòlit Físic 4K</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA PROJECT // DOSSIER 11</div>
+          <div>DANIEL CASADEVALL JAUHIAINEN &bull; 2026</div>
+        </footer>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 2: THE S-FIRST-SECTION CENTERED
+         ==================================================================== -->
+    <section class="slide" id="slide-1" data-slide-index="1" aria-label="Diapo 2: Simulació en Directe s-first-section">
+      <div class="slide-inner">
+
+        <!-- Slide Header -->
+        <header class="slide-header">
+          <div class="slide-header__title-box">
+            <div class="slide-header__meta">
+              <span>// PORTADA / SIMULACIÓ EN DIRECTE DE L'ESPÈCIMEN</span>
+            </div>
+            <h2>End of Modern Humanism</h2>
+            <p>Simulació d'espècimen digital autònom en temps real &bull; Cicle temporal a 16 FPS</p>
+          </div>
+          <div class="slide-header__badge">LIVE INTERACTIVE HUD</div>
+        </header>
+
+        <!-- Centered s-first-section Architecture -->
+        <div class="s-first-section-centered">
+
+          <div class="s-first-layout">
+
+            <!-- Left Lateral Terminal Wing: SDXL Engine Feeds -->
+            <div class="terminal-wing">
+              <div class="bracket-tl"></div>
+              <div class="bracket-tr"></div>
+              <div class="bracket-bl"></div>
+              <div class="bracket-br"></div>
+
+              <div class="terminal-wing__header">
+                <span>[SDXL_ENGINE]</span>
+                <span class="status-tag">ACTIVE</span>
+              </div>
+              <div class="terminal-wing__body">
+                <div class="t-line">[0.001s] [INIT] PyTorch CUDA stream initialized</div>
+                <div class="t-line">[0.024s] [SDXL] Allocating VRAM tensors: 1024x1024 fp16</div>
+                <div class="t-line">[0.058s] [CHECKPOINT] Loading: minivita_base_v1.safetensors</div>
+                <div class="t-line">[0.082s] [UNET] Compiling cross-attention (2.6B params)</div>
+                <div class="t-line">[0.115s] [VAE] AutoencoderKL fp16 cache initialized [OK]</div>
+                <div class="t-line">[0.142s] [LORA] Merging weights: specimen_morph.safetensors</div>
+                <div class="t-line">[0.176s] [SCHEDULER] EulerAncestralDiscrete: steps=20 cfg=4.5</div>
+                <div class="t-line highlight">[0.210s] [MISTRAL] charLLM cognitive vector bridge linked</div>
+              </div>
+            </div>
+
+            <!-- Centered Media Box: minivita.mov / mini.mp4 -->
+            <div class="center-media-box">
+              <div class="bracket-tl"></div>
+              <div class="bracket-tr"></div>
+              <div class="bracket-bl"></div>
+              <div class="bracket-br"></div>
+
+              <div class="center-media-hud-top">
+                <span class="rec-status">
+                  <span class="rec-dot" aria-hidden="true"></span>
+                  <span>LIVE RECT // SPECIMEN 001</span>
+                </span>
+                <span>16 FPS LOCKED</span>
+              </div>
+
+              <div class="center-video-container">
+                <video autoplay loop muted playsinline preload="auto" poster="static/images/work/001.png">
+                  <source src="static/minivita.mov" type="video/quicktime">
+                  <source src="static/mini.mp4" type="video/mp4">
+                  El navegador no admet l'etiqueta de vídeo.
+                </video>
+                <!-- Print Fallback Image -->
+                <img src="static/images/work/001.png" alt="Especimen MINIVITA 001" class="video-print-fallback">
+              </div>
+
+              <div class="center-media-hud-bottom">
+                <div>// FEED 01: MINIVITA_ACTIVE_TERRARIUM</div>
+                <span class="access-link">[ACCÉS EN TEMPS REAL]</span>
+              </div>
+            </div>
+
+            <!-- Right Lateral Terminal Wing: 16 FPS Inference Loop -->
+            <div class="terminal-wing">
+              <div class="bracket-tl"></div>
+              <div class="bracket-tr"></div>
+              <div class="bracket-bl"></div>
+              <div class="bracket-br"></div>
+
+              <div class="terminal-wing__header">
+                <span>[INFERENCE_RUNNER]</span>
+                <span class="status-tag">LOCK: 16.00 FPS</span>
+              </div>
+              <div class="terminal-wing__body">
+                <div class="t-line">[0.012s] [FPS_LOCK] Decimation active @ 16.00 FPS</div>
+                <div class="t-line">[0.034s] [DELTA] 62.50ms step interval enforced</div>
+                <div class="t-line">[0.065s] [INFERENCE] Denoise latent 00418: step 18/20</div>
+                <div class="t-line">[0.098s] [OPENGL] Frame blit -&gt; temporal decimation</div>
+                <div class="t-line">[0.130s] [VECTOR_DB] Cosine query: score=0.9842 (k=5)</div>
+                <div class="t-line">[0.162s] [VRAM] 7420MB / 12288MB (util: 78%)</div>
+                <div class="t-line">[0.194s] [KINEMATICS] Procedural skeleton rig synced</div>
+                <div class="t-line highlight">[0.228s] [LOCK] Decimation rate stable: 16.01 FPS</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA // SECCIÓ 01: SIMULACIÓ EN DIRECTE</div>
+          <div>ESTAT: LOCK TEMPORAL 16 FPS ACTIU</div>
+        </footer>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 3: PLACEHOLDER 1 - MEMÒRIA VECTORIAL & ESPAI LATENT
+         ==================================================================== -->
+    <section class="slide" id="slide-2" data-slide-index="2" aria-label="Diapo 3: Topologia de Memòria Vectorial">
+      <div class="slide-inner">
+
+        <!-- Slide Header -->
+        <header class="slide-header">
+          <div class="slide-header__title-box">
+            <div class="slide-header__meta">
+              <span>// 01. PERSISTÈNCIA COGNITIVA</span>
+            </div>
+            <h2>Topologia de Memòria Vectorial</h2>
+            <p>Indexació contínua d'embeddings &bull; Retenció no supervisada en alta dimensió</p>
+          </div>
+          <div class="slide-header__badge">VECTOR_DB // 1536-D</div>
+        </header>
+
+        <!-- Content Grid: Text + Project Image 000.png -->
+        <div class="slide-grid-2col">
+
+          <div class="slide-text-col">
+            <p class="lead-desc">
+              A diferència dels sistemes d'IA convencionals dependents de prompts de text, MINIVITA manté una continuïtat
+              existencial pròpia mitjançant un dipòsit de memòria vectorial d'alta dimensionalitat.
+            </p>
+
+            <ul class="slide-points">
+              <li class="slide-point">
+                <span class="slide-point-icon">[01]</span>
+                <div>
+                  <strong>Retenció Episòdica Contínua:</strong>
+                  Cada decisió perceptiva es codifica en vectors latents de 1536 dimensions, evitant la pèrdua d'estat entre fotogrames.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[02]</span>
+                <div>
+                  <strong>Recuperació Associativa Cosinus:</strong>
+                  Consultes de similitud en menys de 4.2ms permeten a l'espècimen evocar patrons morfològics previs de manera orgànica.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[03]</span>
+                <div>
+                  <strong>Deriva Conductual Sense Bucles:</strong>
+                  L'acumulació dinàmica de vectors impedeix que l'agent quedi atrapat en repeticions mecàniques o ciclicitats artificials.
+                </div>
+              </li>
+            </ul>
+
+            <!-- Tech Specs Grid -->
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-item__label">DIMENSIONALITAT</span>
+                <span class="spec-item__value">1536-D Normalitzat</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">LATÈNCIA DE CONSULTA</span>
+                <span class="spec-item__value">&lt; 4.20 ms (top_k=5)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">ESTRUCTURA DE GRAF</span>
+                <span class="spec-item__value">HNSW Hierarchical</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">ACOBLAMENT</span>
+                <span class="spec-item__value">Injecció Latent Directa</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Visual Blueprint Image -->
+          <div class="media-card-frame">
+            <div class="bracket-tl"></div>
+            <div class="bracket-tr"></div>
+            <div class="bracket-bl"></div>
+            <div class="bracket-br"></div>
+
+            <img src="static/images/work/000.png" alt="Plànol de Connexió: Topologia de Memòria Vectorial" loading="lazy">
+
+            <div class="media-card-caption">
+              <div><span class="tag">PLÀNOL 01</span> // MAPA DE RETENCIÓ VECTORIAL</div>
+              <div>DOC-REF: VEC-TOP-000</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA // SECCIÓ 02: MEMÒRIA VECTORIAL</div>
+          <div>DANIEL CASADEVALL JAUHIAINEN</div>
+        </footer>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 4: PLACEHOLDER 2 - CINEMÀTICA PROCEDURAL & OPENGL
+         ==================================================================== -->
+    <section class="slide" id="slide-3" data-slide-index="3" aria-label="Diapo 4: Cinemàtica Procedural i OpenGL">
+      <div class="slide-inner">
+
+        <!-- Slide Header -->
+        <header class="slide-header">
+          <div class="slide-header__title-box">
+            <div class="slide-header__meta">
+              <span>// 02. BIOMECÀNICA COMPUTACIONAL</span>
+            </div>
+            <h2>Arquitectura de Moviment Procedural</h2>
+            <p>Rig de 28 ossos procedurals &bull; Pipeline gràfic OpenGL / GLSL sense animació pre-gravada</p>
+          </div>
+          <div class="slide-header__badge">OPENGL 4.6 // GLSL SHADERS</div>
+        </header>
+
+        <!-- Content Grid: Project Image 001.png + Text -->
+        <div class="slide-grid-2col">
+
+          <!-- Left Column: Visual Rig Blueprint -->
+          <div class="media-card-frame">
+            <div class="bracket-tl"></div>
+            <div class="bracket-tr"></div>
+            <div class="bracket-bl"></div>
+            <div class="bracket-br"></div>
+
+            <img src="static/images/work/001.png" alt="Plànol de Muntatge: Cinemàtica Procedural OpenGL" loading="lazy">
+
+            <div class="media-card-caption">
+              <div><span class="tag">PLÀNOL 02</span> // ESQUELET CINEMÀTIC &amp; IK RIG</div>
+              <div>DOC-REF: KIN-RIG-001</div>
+            </div>
+          </div>
+
+          <!-- Right Column: Explanatory Content -->
+          <div class="slide-text-col">
+            <p class="lead-desc">
+              MINIVITA no utilitza clips d'animació pre-gravats ni keyframes tradicionals. Tota la seva motricitat és generada
+              en temps d'execució mitjançant lleis cinemàtiques procedurals i físiques elàstiques.
+            </p>
+
+            <ul class="slide-points">
+              <li class="slide-point">
+                <span class="slide-point-icon">[01]</span>
+                <div>
+                  <strong>Esquelet Procedural de 28 Nodes:</strong>
+                  Articulacions interconnectades per dinàmiques de molla i amortidor (spring-damper) que responen a la inèrcia de l'espècimen.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[02]</span>
+                <div>
+                  <strong>Cinemàtica Inversa (IK):</strong>
+                  Resolució trigonomètrica contínua que adapta les extremitats sintètiques als límits físics de la gàbia digital.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[03]</span>
+                <div>
+                  <strong>Shaders GLSL a Mesura:</strong>
+                  Dispersió subsuperficial (SSS), reflexió cromàtica refractiva i deformació per soroll Simplex en temps real.
+                </div>
+              </li>
+            </ul>
+
+            <!-- Tech Specs Grid -->
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-item__label">NODES CINEMÀTICS</span>
+                <span class="spec-item__value">28 Procedural Bones</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">SUB-STEPPING FÍSIC</span>
+                <span class="spec-item__value">Verlet Solver @ 60 Hz</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">TARGET DE RENDER</span>
+                <span class="spec-item__value">GLSL Custom Shaders</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">REPULSIÓ DE TERRARI</span>
+                <span class="spec-item__value">Vector Boundary Force</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA // SECCIÓ 03: CINEMÀTICA PROCEDURAL</div>
+          <div>DANIEL CASADEVALL JAUHIAINEN</div>
+        </footer>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 5: PLACEHOLDER 3 - NUCLI COGNITIU QUANTITZAT
+         ==================================================================== -->
+    <section class="slide" id="slide-4" data-slide-index="4" aria-label="Diapo 5: Nucli Cognitiu Quantitzat">
+      <div class="slide-inner">
+
+        <!-- Slide Header -->
+        <header class="slide-header">
+          <div class="slide-header__title-box">
+            <div class="slide-header__meta">
+              <span>// 03. MOTOR D'INFERÈNCIA LOCAL</span>
+            </div>
+            <h2>Nucli Cognitiu Quantitzat</h2>
+            <p>charLLM autònom &bull; Pulsions internes &bull; Desacoblament absolut de serveis al núvol</p>
+          </div>
+          <div class="slide-header__badge">charLLM // LOCAL EDGE INFERENCE</div>
+        </header>
+
+        <!-- Content Grid: Text + Project Image 002.png -->
+        <div class="slide-grid-2col">
+
+          <div class="slide-text-col">
+            <p class="lead-desc">
+              L'autonomia de MINIVITA descansa en un model lingüístic d'escala reduïda quantitzat a 4 bits (charLLM) que resideix
+              exclusivament en la VRAM de la instal·lació física, garantint operació autònoma perpètua.
+            </p>
+
+            <ul class="slide-points">
+              <li class="slide-point">
+                <span class="slide-point-icon">[01]</span>
+                <div>
+                  <strong>Model de Pulsions Pròpies:</strong>
+                  L'espècimen manté paràmetres interns d'escrutini, curiositat, fatiga i necessitat de refugi que guien el seu comportament.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[02]</span>
+                <div>
+                  <strong>Traducció de Pensament a Latent:</strong>
+                  Els tokens generats per charLLM es projecten com a vectors de control al procés de difusió generativa.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[03]</span>
+                <div>
+                  <strong>Soberania Computacional:</strong>
+                  Cap API externa ni connexió a Internet intervé en el cicle biològic de l'espècimen a la sala.
+                </div>
+              </li>
+            </ul>
+
+            <!-- Tech Specs Grid -->
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-item__label">PRECISIÓ QUANTITZADA</span>
+                <span class="spec-item__value">4-Bit Integer Edge Weights</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">TEMPS PER TOKEN</span>
+                <span class="spec-item__value">18.40 ms (In-Memory)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">OCUPACIÓ VRAM</span>
+                <span class="spec-item__value">~2.1 GB Model Footprint</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">MODE OPERATIU</span>
+                <span class="spec-item__value">Closed-Loop 100% Offline</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Visual Processor Blueprint -->
+          <div class="media-card-frame">
+            <div class="bracket-tl"></div>
+            <div class="bracket-tr"></div>
+            <div class="bracket-bl"></div>
+            <div class="bracket-br"></div>
+
+            <img src="static/images/work/002.png" alt="Plànol de Processament: Nucli Quantitzat charLLM" loading="lazy">
+
+            <div class="media-card-caption">
+              <div><span class="tag">PLÀNOL 03</span> // TOPOLOGIA DE PROCÉS charLLM</div>
+              <div>DOC-REF: CPU-LLM-002</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA // SECCIÓ 04: NUCLI COGNITIU QUANTITZAT</div>
+          <div>DANIEL CASADEVALL JAUHIAINEN</div>
+        </footer>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 6: PLACEHOLDER 4 - DISPOSITIU FÍSIC & TERRARI DIGITAL
+         ==================================================================== -->
+    <section class="slide" id="slide-5" data-slide-index="5" aria-label="Diapo 6: Dispositiu Físic i Terrari Digital">
+      <div class="slide-inner">
+
+        <!-- Slide Header -->
+        <header class="slide-header">
+          <div class="slide-header__title-box">
+            <div class="slide-header__meta">
+              <span>// 04. EMBODIMENT ESPACIAL &amp; HARDWARE</span>
+            </div>
+            <h2>Dispositiu Físic &amp; Terrari Digital</h2>
+            <p>Monòlit d'alumini anoditzat &bull; Sensorització de presència per LiDAR &bull; Pantalla vertical 4K</p>
+          </div>
+          <div class="slide-header__badge">SPATIAL INSTALLATION // 4K OLED</div>
+        </header>
+
+        <!-- Content Grid: Dual Renders (full.png & back.png) + Description -->
+        <div class="slide-grid-2col">
+
+          <!-- Left Column: Dual Blueprint Renders -->
+          <div class="dual-image-grid">
+            <div class="media-card-frame">
+              <div class="bracket-tl"></div>
+              <div class="bracket-tr"></div>
+              <div class="bracket-bl"></div>
+              <div class="bracket-br"></div>
+              <img src="static/images/work/full.png" alt="Plànol Taxonòmic Frontal" loading="lazy">
+              <div class="media-card-caption">
+                <div><span class="tag">FRONT</span> // TAXONÒMIC INTEGRAL</div>
+              </div>
+            </div>
+
+            <div class="media-card-frame">
+              <div class="bracket-tl"></div>
+              <div class="bracket-tr"></div>
+              <div class="bracket-bl"></div>
+              <div class="bracket-br"></div>
+              <img src="static/images/work/back.png" alt="Plànol Anatòmic Posterior" loading="lazy">
+              <div class="media-card-caption">
+                <div><span class="tag">BACK</span> // XASSÍS POSTERIOR</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Explanatory Content -->
+          <div class="slide-text-col">
+            <p class="lead-desc">
+              Concebut com una escultura tecnològica vertical, el terrari físic confina l'espècimen dins d'un monòlit
+              d'alumini fresat i vidre d'alta transparència, dissenyat per a l'espai de galeria.
+            </p>
+
+            <ul class="slide-points">
+              <li class="slide-point">
+                <span class="slide-point-icon">[01]</span>
+                <div>
+                  <strong>Interacció per Presència (LiDAR):</strong>
+                  El dispositiu no disposa de pantalles tàctils ni botons; percep la distància física de l'espectador, alterant la dilatació de l'espècimen i el seu vector de mirada.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[02]</span>
+                <div>
+                  <strong>Acústica de Ressonància Sòlida:</strong>
+                  Transductors fixats a l'estructura fan vibrar el propi metall, generant un so tàctil de baixa freqüència.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[03]</span>
+                <div>
+                  <strong>Enginyeria Tèrmica Passiva:</strong>
+                  Refrigeració convectiva silenciosa per garantir operació contínua durant mesos d'exhibició sense fallada.
+                </div>
+              </li>
+            </ul>
+
+            <!-- Tech Specs Grid -->
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-item__label">DIMENSIONS MONÒLIT</span>
+                <span class="spec-item__value">1980 &times; 420 &times; 120 mm</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">PANELL DE DISPLAY</span>
+                <span class="spec-item__value">4K Vertical OLED (1000 nits)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">SENSORITZACIÓ</span>
+                <span class="spec-item__value">Solid-State LiDAR Array</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">TRANSDUCCIÓ SÒNICA</span>
+                <span class="spec-item__value">Dual Surface Exciters</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA // SECCIÓ 05: DISPOSITIU FÍSIC &amp; TERRARI</div>
+          <div>DANIEL CASADEVALL JAUHIAINEN</div>
+        </footer>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         SLIDE 7: PLACEHOLDER 5 - MARC CONCEPTUAL & DECISIÓ 16 FPS
+         ==================================================================== -->
+    <section class="slide" id="slide-6" data-slide-index="6" aria-label="Diapo 7: Marc Conceptual i Decisió 16 FPS">
+      <div class="slide-inner">
+
+        <!-- Slide Header -->
+        <header class="slide-header">
+          <div class="slide-header__title-box">
+            <div class="slide-header__meta">
+              <span>// 05. DISCURS FILOSÒFIC &amp; CURATORIAL</span>
+            </div>
+            <h2>Marc Conceptual &amp; Temporalitat 16 FPS</h2>
+            <p>End of Modern Humanism &bull; L'espècimen sintètic com a subjectivitat viva autònoma</p>
+          </div>
+          <div class="slide-header__badge">ARTIST STATEMENT // 2026</div>
+        </header>
+
+        <!-- Content Grid: Philosophical Pillars + Image/Credits Card -->
+        <div class="slide-grid-2col">
+
+          <div class="slide-text-col">
+            <p class="lead-desc">
+              MINIVITA qüestiona la concepció antropocèntrica de la intel·ligència artificial. En lloc de dissenyar un assistent
+              servil i obedient, l'obra construeix una alteritat sintètica indiferent a la utilitat productiva.
+            </p>
+
+            <ul class="slide-points">
+              <li class="slide-point">
+                <span class="slide-point-icon">[01]</span>
+                <div>
+                  <strong>Ruptura del Paradigma de l'Eina:</strong>
+                  L'espècimen no està creat per resoldre tasques ni generar continguts; viu en el seu propi substrat biològic-digital com a organisme tancat.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[02]</span>
+                <div>
+                  <strong>La Decisió del Lock a 16 FPS:</strong>
+                  Un rebuig explícit a la hiperfluïdesa cosmètica dels 60/120 FPS. 16 FPS imposa una cadència cinematogràfica i metabòlica on cada cicle computacional és visiblement elaborat.
+                </div>
+              </li>
+              <li class="slide-point">
+                <span class="slide-point-icon">[03]</span>
+                <div>
+                  <strong>L'Observador com a Testimoni:</strong>
+                  Davant del monòlit, l'humà no té controls de comandament; es veu reduït a la condició de testimoni davant d'una nova forma d'existència no-humana.
+                </div>
+              </li>
+            </ul>
+
+            <!-- Tech Specs Grid -->
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-item__label">CORRENTS TEÒRIQUES</span>
+                <span class="spec-item__value">Post-Humanisme &bull; Nou Materialisme</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">TAXA D'INFERÈNCIA</span>
+                <span class="spec-item__value">16.00 FPS Strict Step Cadence</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">RELACIÓ AMB EL PÚBLIC</span>
+                <span class="spec-item__value">Observació Contemplativa</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-item__label">DOCUMENTACIÓ</span>
+                <span class="spec-item__value">Dossier d'Obra &amp; Assaig Complet</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Curatorial Card with Artwork Image 002.png -->
+          <div class="media-card-frame">
+            <div class="bracket-tl"></div>
+            <div class="bracket-tr"></div>
+            <div class="bracket-bl"></div>
+            <div class="bracket-br"></div>
+
+            <img src="static/images/history/002.png" alt="Decimació Temporal a 16 FPS" loading="lazy">
+
+            <div class="media-card-caption">
+              <div><span class="tag">CURATORIAL</span> // 16 FPS TEMPORAL METRIC</div>
+              <div>BARCELONA &bull; HELSINKI</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Slide Footer -->
+        <footer class="slide-footer">
+          <div>MINIVITA PROJECT // DOSSIER DE PRESENTACIÓ TÈCNICA &amp; CONCEPTUAL [11]</div>
+          <div>DANIEL CASADEVALL JAUHIAINEN &bull; 2026</div>
+        </footer>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ====================================================================
+       HUD NAVIGATION & PRESENTATION CONTROLS (Floating Bottom Bar)
+       ==================================================================== -->
+  <nav id="pres-hud" class="no-print" aria-label="Controls de presentació">
+    <!-- Prev Button -->
+    <button type="button" class="hud-btn" id="hud-prev-btn" title="Diapo anterior (Fletxa esquerra / Retrocedir)">
+      <span>&#9664;</span>
+      <span>ANT</span>
+    </button>
+
+    <!-- Slide Index Counter -->
+    <span class="hud-counter" id="hud-counter-label">01 / 07</span>
+
+    <!-- Interactive Navigation Dots -->
+    <div class="hud-dots" id="hud-dots-container" role="tablist" aria-label="Navegació ràpida per diapos">
+      <span class="hud-dot is-active" data-index="0" title="Diapo 1: MINIVITA Títol i Autoria"></span>
+      <span class="hud-dot" data-index="1" title="Diapo 2: Simulació s-first-section"></span>
+      <span class="hud-dot" data-index="2" title="Diapo 3: Memòria Vectorial"></span>
+      <span class="hud-dot" data-index="3" title="Diapo 4: Cinemàtica Procedural"></span>
+      <span class="hud-dot" data-index="4" title="Diapo 5: Nucli Quantitzat"></span>
+      <span class="hud-dot" data-index="5" title="Diapo 6: Dispositiu Físic"></span>
+      <span class="hud-dot" data-index="6" title="Diapo 7: Marc Conceptual"></span>
+    </div>
+
+    <!-- Next Button -->
+    <button type="button" class="hud-btn" id="hud-next-btn" title="Diapo següent (Fletxa dreta / Espai)">
+      <span>SEG</span>
+      <span>&#9654;</span>
+    </button>
+
+    <div class="hud-sep" aria-hidden="true"></div>
+
+    <!-- Fullscreen Toggle Button -->
+    <button type="button" class="hud-btn" id="hud-fullscreen-btn" title="Mode Pantalla Completa (Tecla F)">
+      <span id="fs-icon">&#x26F6;</span>
+      <span id="fs-text">PANTALLA COMPLETA</span>
+    </button>
+
+    <div class="hud-sep" aria-hidden="true"></div>
+
+    <!-- Print / Export to PDF Button -->
+    <button type="button" class="hud-btn" id="hud-print-btn" title="Imprimir / Exportar a PDF (Ctrl+P / Tecla P)" style="color: var(--accent-red);">
+      <span>&#x2399;</span>
+      <span>IMPRIMIR / PDF</span>
+    </button>
+
+    <div class="hud-sep" aria-hidden="true"></div>
+
+    <!-- Keyboard shortcuts hint -->
+    <span class="hud-key-hints" title="Tecles ràpides: Fletxes o Espai per avançar, F per pantalla completa, P per imprimir com a PDF">
+      [ &larr; / &rarr; / ESPAI &bull; F &bull; P ]
+    </span>
+  </nav>
+
+
+  <!-- ====================================================================
+       PRESENTATION CONTROLLER JAVASCRIPT
+       ==================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const dots = Array.from(document.querySelectorAll('.hud-dot'));
+      const counterLabel = document.getElementById('hud-counter-label');
+      const prevBtn = document.getElementById('hud-prev-btn');
+      const nextBtn = document.getElementById('hud-next-btn');
+      const fullscreenBtn = document.getElementById('hud-fullscreen-btn');
+      const printBtn = document.getElementById('hud-print-btn');
+      const fsIcon = document.getElementById('fs-icon');
+      const fsText = document.getElementById('fs-text');
+      const embedded = window.parent !== window;
+
+      let currentIndex = 0;
+      const totalSlides = slides.length;
+
+      if (embedded) {
+        document.documentElement.classList.add('embedded');
+      }
+
+      function reportSlide() {
+        if (embedded) {
+          window.parent.postMessage({ type: 'slide', index: currentIndex, total: totalSlides }, '*');
+        }
+      }
+
+      // Ensure index is within boundaries
+      function goToSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= totalSlides) index = totalSlides - 1;
+
+        if (index === currentIndex && slides[index].classList.contains('is-active')) {
+          reportSlide();
+          return;
+        }
+
+        // Deactivate previous slide
+        slides[currentIndex].classList.remove('is-active');
+        if (dots[currentIndex]) {
+          dots[currentIndex].classList.remove('is-active');
+        }
+
+        currentIndex = index;
+
+        // Activate new slide
+        slides[currentIndex].classList.add('is-active');
+        if (dots[currentIndex]) {
+          dots[currentIndex].classList.add('is-active');
+        }
+
+        // Update counter label (e.g. "02 / 07")
+        const slideNumStr = String(currentIndex + 1).padStart(2, '0');
+        const totalNumStr = String(totalSlides).padStart(2, '0');
+        counterLabel.textContent = `${slideNumStr} / ${totalNumStr}`;
+        reportSlide();
+
+        // If active slide contains video (e.g. Slide 2), ensure video plays smoothly
+        const activeVideo = slides[currentIndex].querySelector('video');
+        if (activeVideo) {
+          activeVideo.play().catch(function () {
+            // Autoplay policies may need a user interaction; muted helps guarantee playback
+          });
+        }
+      }
+
+      function nextSlide() {
+        if (currentIndex < totalSlides - 1) {
+          goToSlide(currentIndex + 1);
+        } else {
+          // Wrap around or stay at end; stay at end for formal presentations
+          goToSlide(0);
+        }
+      }
+
+      function prevSlide() {
+        if (currentIndex > 0) {
+          goToSlide(currentIndex - 1);
+        }
+      }
+
+      if (embedded) {
+        window.addEventListener('message', (e) => {
+          const message = e.data;
+          if (e.source !== window.parent || !message) return;
+          if (message.type === 'nav' && Number.isInteger(message.dir)) {
+            if (message.dir > 0) nextSlide();
+            else if (message.dir < 0) prevSlide();
+          } else if (message.type === 'jump' && Number.isInteger(message.index)) {
+            goToSlide(message.index);
+          }
+        });
+      }
+
+      // HUD Button click listeners
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+
+      // Dot click listeners
+      dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          const targetIndex = parseInt(dot.getAttribute('data-index'), 10);
+          goToSlide(targetIndex);
+        });
+      });
+
+      // Fullscreen handling
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().then(() => {
+            updateFsUI(true);
+          }).catch(err => {
+            console.warn('Error enabling fullscreen mode:', err);
+          });
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().then(() => {
+              updateFsUI(false);
+            });
+          }
+        }
+      }
+
+      function updateFsUI(isFs) {
+        if (isFs) {
+          fsIcon.textContent = '✕';
+          fsText.textContent = 'SORTIR';
+        } else {
+          fsIcon.textContent = '⛶';
+          fsText.textContent = 'PANTALLA COMPLETA';
+        }
+      }
+
+      fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+      document.addEventListener('fullscreenchange', () => {
+        updateFsUI(!!document.fullscreenElement);
+      });
+
+      // Print to PDF handling
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+
+      // Keyboard navigation
+      window.addEventListener('keydown', (e) => {
+        if (embedded) return;
+        // Do not intercept if user is inside an input or editable field
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+        switch (e.key) {
+          case 'ArrowRight':
+          case 'ArrowDown':
+          case 'PageDown':
+          case ' ': // Spacebar
+            e.preventDefault();
+            nextSlide();
+            break;
+
+          case 'ArrowLeft':
+          case 'ArrowUp':
+          case 'PageUp':
+          case 'Backspace':
+            e.preventDefault();
+            prevSlide();
+            break;
+
+          case 'Home':
+            e.preventDefault();
+            goToSlide(0);
+            break;
+
+          case 'End':
+            e.preventDefault();
+            goToSlide(totalSlides - 1);
+            break;
+
+          case 'f':
+          case 'F':
+            e.preventDefault();
+            toggleFullscreen();
+            break;
+
+          case 'p':
+          case 'P':
+            // If Ctrl or Meta is held, let default browser print dialog trigger
+            if (!e.ctrlKey && !e.metaKey) {
+              e.preventDefault();
+              window.print();
+            }
+            break;
+
+          // Number keys 1-7 for direct jump
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+            const num = parseInt(e.key, 10) - 1;
+            if (num >= 0 && num < totalSlides) {
+              e.preventDefault();
+              goToSlide(num);
+            }
+            break;
+        }
+      });
+
+      // Debounced Mouse Wheel Scroll (for trackpads and scroll wheels)
+      let wheelTimeout = null;
+      window.addEventListener('wheel', (e) => {
+        if (wheelTimeout) return;
+        wheelTimeout = setTimeout(() => {
+          wheelTimeout = null;
+        }, 360);
+
+        if (e.deltaY > 25) {
+          nextSlide();
+        } else if (e.deltaY < -25) {
+          prevSlide();
+        }
+      }, { passive: true });
+
+      // Touch Swipe Navigation for mobile & touchscreens
+      let touchStartX = 0;
+      let touchStartY = 0;
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (e.changedTouches.length === 1) {
+          const deltaX = e.changedTouches[0].clientX - touchStartX;
+          const deltaY = e.changedTouches[0].clientY - touchStartY;
+          // Ensure horizontal intent
+          if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+            if (deltaX < 0) {
+              nextSlide();
+            } else {
+              prevSlide();
+            }
+          }
+        }
+      }, { passive: true });
+
+      // Initialize slide 0
+      goToSlide(0);
+
+    })();
+  </script>
+</body>
+
+</html>
