@@ -4,7 +4,6 @@
   const grid = $('#grid'), player = $('#player'), pcanvas = $('#pcanvas'),
         pframe = $('#pframe'), shield = $('#shield'), count = $('#count'), bar = $('#bar');
   const BASE = 'presentations/';
-  if (location.protocol === 'file:') $('#local-warning').hidden = false;
   const isPdf = f => /\.pdf$/i.test(f);
   const url = p => BASE + encodeURI(p.file);
   const pdfjs = window.pdfjsLib;
