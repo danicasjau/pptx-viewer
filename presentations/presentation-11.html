@@ -713,6 +713,15 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .center-video-container video.is-ready {
+      opacity: 1;
     }
 
     .center-media-hud-bottom {
@@ -734,12 +743,15 @@
       font-weight: 600;
     }
 
-    /* Print Fallback Image (visible in print mode or when video disabled) */
+    /* Keep a still image visible until the video is ready or when playback is unavailable. */
     .video-print-fallback {
-      display: none;
+      display: block;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      position: absolute;
+      inset: 0;
+      z-index: 0;
     }
 
     /* ==========================================================================
@@ -1088,10 +1100,8 @@
               </div>
 
               <div class="center-video-container">
-                <video autoplay loop muted playsinline preload="auto" poster="static/images/work/001.png">
-                  <source src="static/minivita.mov" type="video/quicktime">
+                <video loop muted playsinline preload="none" poster="static/images/work/001.png">
                   <source src="static/mini.mp4" type="video/mp4">
-                  El navegador no admet l'etiqueta de vídeo.
                 </video>
                 <!-- Print Fallback Image -->
                 <img src="static/images/work/001.png" alt="Especimen MINIVITA 001" class="video-print-fallback">
@@ -1721,9 +1731,33 @@
       const fsIcon = document.getElementById('fs-icon');
       const fsText = document.getElementById('fs-text');
       const embedded = window.parent !== window;
+      const presentationVideo = document.querySelector('.center-video-container video');
+      const terminalBodies = Array.from(document.querySelectorAll('.terminal-wing__body'));
+      const terminalSnapshots = terminalBodies.map((body) =>
+        Array.from(body.children, (line) => ({
+          text: line.textContent,
+          className: line.className
+        }))
+      );
+      const terminalFeeds = [
+        [
+          '[0.244s] [LATENT] Sampling frame 00419 / 00480',
+          '[0.278s] [MEMORY] Vector cache hit: 0.9842',
+          '[0.312s] [SDXL] Denoise pass 19/20 complete',
+          '[0.346s] [OUTPUT] Specimen frame committed [OK]'
+        ],
+        [
+          '[0.262s] [CLOCK] Tick interval: 62.50ms',
+          '[0.296s] [RIG] Joint constraints resolved [OK]',
+          '[0.330s] [BUFFER] Temporal frame swap complete',
+          '[0.364s] [LOCK] Inference cadence stable: 16.00 FPS'
+        ]
+      ];
 
       let currentIndex = 0;
       const totalSlides = slides.length;
+      let terminalTimer = null;
+      let terminalTypeTimers = [];
 
       if (embedded) {
         document.documentElement.classList.add('embedded');
@@ -1734,6 +1768,90 @@
           window.parent.postMessage({ type: 'slide', index: currentIndex, total: totalSlides }, '*');
         }
       }
+
+      function stopTerminalAnimation() {
+        clearInterval(terminalTimer);
+        terminalTimer = null;
+        terminalTypeTimers.forEach(clearInterval);
+        terminalTypeTimers = [];
+        terminalBodies.forEach((body, index) => {
+          body.replaceChildren(...terminalSnapshots[index].map(({ text, className }) => {
+            const line = document.createElement('div');
+            line.className = className;
+            line.textContent = text;
+            return line;
+          }));
+        });
+      }
+
+      function startTerminalAnimation() {
+        stopTerminalAnimation();
+        let tick = 0;
+        terminalTimer = window.setInterval(() => {
+          terminalBodies.forEach((body, column) => {
+            const line = document.createElement('div');
+            line.className = 't-line';
+            body.append(line);
+            while (body.children.length > terminalSnapshots[column].length) {
+              body.firstElementChild.remove();
+            }
+
+            const message = terminalFeeds[column][tick % terminalFeeds[column].length];
+            let character = 0;
+            const typingTimer = window.setInterval(() => {
+              line.textContent = message.slice(0, ++character);
+              if (character >= message.length) {
+                clearInterval(typingTimer);
+                terminalTypeTimers = terminalTypeTimers.filter((timer) => timer !== typingTimer);
+                line.classList.add('highlight');
+              }
+            }, 12);
+            terminalTypeTimers.push(typingTimer);
+          });
+          tick += 1;
+        }, 1500);
+      }
+
+      function playPresentationVideo() {
+        if (!presentationVideo || document.hidden) return;
+        presentationVideo.play().then(() => {
+          presentationVideo.classList.add('is-ready');
+        }).catch((error) => {
+          presentationVideo.classList.remove('is-ready');
+          if (error.name !== 'AbortError') {
+            console.warn('MINIVITA video could not start:', error);
+          }
+        });
+      }
+
+      function updateSlideVisuals(index) {
+        if (index === 1) {
+          startTerminalAnimation();
+          playPresentationVideo();
+        } else {
+          stopTerminalAnimation();
+          if (presentationVideo) {
+            presentationVideo.pause();
+            presentationVideo.classList.remove('is-ready');
+          }
+        }
+      }
+
+      if (presentationVideo) {
+        presentationVideo.addEventListener('playing', () => {
+          presentationVideo.classList.add('is-ready');
+        });
+        presentationVideo.addEventListener('error', () => {
+          presentationVideo.classList.remove('is-ready');
+          console.error('MINIVITA video failed to load:', presentationVideo.error);
+        });
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        if (currentIndex === 1 && !document.hidden) {
+          playPresentationVideo();
+        }
+      });
 
       // Ensure index is within boundaries
       function goToSlide(index) {
@@ -1764,14 +1882,7 @@
         const totalNumStr = String(totalSlides).padStart(2, '0');
         counterLabel.textContent = `${slideNumStr} / ${totalNumStr}`;
         reportSlide();
-
-        // If active slide contains video (e.g. Slide 2), ensure video plays smoothly
-        const activeVideo = slides[currentIndex].querySelector('video');
-        if (activeVideo) {
-          activeVideo.play().catch(function () {
-            // Autoplay policies may need a user interaction; muted helps guarantee playback
-          });
-        }
+        updateSlideVisuals(currentIndex);
       }
 
       function nextSlide() {

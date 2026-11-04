@@ -4,6 +4,7 @@
   const grid = $('#grid'), player = $('#player'), pcanvas = $('#pcanvas'),
         pframe = $('#pframe'), shield = $('#shield'), count = $('#count'), bar = $('#bar');
   const BASE = 'presentations/';
+  if (location.protocol === 'file:') $('#local-warning').hidden = false;
   const isPdf = f => /\.pdf$/i.test(f);
   const url = p => BASE + encodeURI(p.file);
   const pdfjs = window.pdfjsLib;
@@ -140,14 +141,20 @@
     if (['ArrowRight','ArrowDown','PageDown',' '].includes(k)) { e.preventDefault(); go(1); }
     else if (['ArrowLeft','ArrowUp','PageUp'].includes(k)) { e.preventDefault(); go(-1); }
     else if (k === 'Home') {
+      e.preventDefault();
       if (mode === 'pdf') { page = 1; hud(); render(); wake(); }
-      else if (mode === 'frame' && pframe.contentWindow)
+      else if (mode === 'frame' && pframe.contentWindow) {
         pframe.contentWindow.postMessage({ type:'jump', index:0 }, '*');
+        wake();
+      }
     }
     else if (k === 'End') {
+      e.preventDefault();
       if (mode === 'pdf') { page = total; hud(); render(); wake(); }
-      else if (mode === 'frame' && pframe.contentWindow)
+      else if (mode === 'frame' && pframe.contentWindow) {
         pframe.contentWindow.postMessage({ type:'jump', index:total - 1 }, '*');
+        wake();
+      }
     }
   });
 })();
